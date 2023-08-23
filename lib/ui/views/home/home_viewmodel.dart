@@ -1,36 +1,70 @@
-import 'package:currency_converter/app/app.bottomsheets.dart';
-import 'package:currency_converter/app/app.dialogs.dart';
-import 'package:currency_converter/app/app.locator.dart';
-import 'package:currency_converter/ui/common/app_strings.dart';
+import 'package:currency_converter/services/api_service.dart';
+import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
-import 'package:stacked_services/stacked_services.dart';
 
-class HomeViewModel extends BaseViewModel {
-  final _dialogService = locator<DialogService>();
-  final _bottomSheetService = locator<BottomSheetService>();
+class HomeViewModel extends FutureViewModel<Map<String, dynamic>> {
+  final ApiService _apiService = ApiService();
 
-  String get counterLabel => 'Counter is: $_counter';
+  // HomeViewModel() {
+  //   realController.addListener(() {
+  //     print(realController.text);
+  //     realChanged(realController.text);
+  //     notifyListeners();
+  //   });
+  // }
 
-  int _counter = 0;
+  final realController = TextEditingController();
+  final dolarController = TextEditingController();
+  final euroController = TextEditingController();
 
-  void incrementCounter() {
-    _counter++;
-    rebuildUi();
+  double _dolar = 0;
+  double _euro = 0;
+
+  double get dolar => _dolar;
+  double get euro => _euro;
+
+  @override
+  Future<Map<String, dynamic>> futureToRun() async {
+    final data = await _apiService.fetchCurrencyData();
+    _dolar = data["results"]["currencies"]["USD"]["buy"];
+    _euro = data["results"]["currencies"]["EUR"]["buy"];
+    return data;
   }
 
-  void showDialog() {
-    _dialogService.showCustomDialog(
-      variant: DialogType.infoAlert,
-      title: 'Stacked Rocks!',
-      description: 'Give stacked $_counter stars on Github',
-    );
+  void clearAll() {
+    realController.text = "";
+    dolarController.text = "";
+    euroController.text = "";
   }
 
-  void showBottomSheet() {
-    _bottomSheetService.showCustomSheet(
-      variant: BottomSheetType.notice,
-      title: ksHomeBottomSheetTitle,
-      description: ksHomeBottomSheetDescription,
-    );
+  void realChanged(String text) {
+    if (text.isEmpty) {
+      clearAll();
+      return;
+    }
+    double real = double.parse(text);
+    dolarController.text = (real / _dolar).toStringAsFixed(2);
+    euroController.text = (real / _euro).toStringAsFixed(2);
+    notifyListeners();
+  }
+
+  void dolarChanged(String text) {
+    if (text.isEmpty) {
+      clearAll();
+      return;
+    }
+    double dolarValue = double.parse(text);
+    realController.text = (dolarValue * _dolar).toStringAsFixed(2);
+    euroController.text = (dolarValue * _dolar / _euro).toStringAsFixed(2);
+  }
+
+  void euroChanged(String text) {
+    if (text.isEmpty) {
+      clearAll();
+      return;
+    }
+    double euroValue = double.parse(text);
+    realController.text = (euroValue * _euro).toStringAsFixed(2);
+    dolarController.text = (euroValue * _euro / _dolar).toStringAsFixed(2);
   }
 }

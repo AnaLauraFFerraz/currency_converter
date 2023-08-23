@@ -19,10 +19,8 @@ import 'package:currency_converter/app/app.bottomsheets.dart';
 import 'package:currency_converter/app/app.dialogs.dart';
 import 'package:currency_converter/app/app.locator.dart';
 import 'package:currency_converter/app/app.router.dart';
-import 'package:currency_converter/app/views/home_view.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:currency_converter/app/app.dart';
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +44,7 @@ class MainApp extends StatelessWidget {
         hintColor: Colors.amber,
         primaryColor: Colors.white,
       ),
-      home: HomeView(),
+      initialRoute: Routes.startupView,
       navigatorKey: StackedService.navigatorKey,
       onGenerateRoute: (settings) => StackedRouter().onGenerateRoute(settings),
     );
